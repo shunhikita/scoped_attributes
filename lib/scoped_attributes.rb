@@ -1,4 +1,6 @@
 require "scoped_attributes/version"
+require "scoped_attributes/scopable"
+require 'scoped_attributes/railtie' if defined?(Rails)
 require "active_support/concern"
 
 module ScopedAttributes
