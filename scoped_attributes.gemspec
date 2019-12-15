@@ -10,8 +10,6 @@ Gem::Specification.new do |spec|
   spec.summary       = "Support to attributes visible for each roles."
   spec.description   = "Support to attributes visible for each roles."
 
-  spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
-
   spec.metadata["source_code_uri"] = "https://github.com/shunhikita/scoped_attributes"
 
   # Specify which files should be added to the gem when it is released.
