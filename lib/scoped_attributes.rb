@@ -1,7 +1,7 @@
 require "scoped_attributes/version"
 require "scoped_attributes/scopable"
 require 'scoped_attributes/railtie' if defined?(Rails)
-require "active_support/concern"
+require "active_support/all"
 
 module ScopedAttributes
   extend ActiveSupport::Concern
@@ -49,10 +49,6 @@ module ScopedAttributes
     end
   end
 
-  def model
-    (self.class.model_name || self.class.name.gsub("Scoped", "")).safe_constantize
-  end
-
   def as_json
     attributes
   end
@@ -82,6 +78,9 @@ module ScopedAttributes
   end
 
   private
+  def model
+    (self.class.model_name || self.class.name.gsub("Scoped", "")).safe_constantize
+  end
 
   def visible?(only)
     return true if only.nil?
@@ -89,8 +88,8 @@ module ScopedAttributes
     case only
     when Array
       only.any? { |role| public_send("#{role}?") }
-    when String
-      only.public_send(string)
+    when Symbol
+      public_send(only)
     when Proc
       unbound_method = generate_method(:only_call, &only)
       !!unbound_method.bind(self).call

@@ -1,3 +1,5 @@
+require "active_support/concern"
+
 module ScopedAttributes
   module Scopable
     extend ActiveSupport::Concern
