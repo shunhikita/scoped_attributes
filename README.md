@@ -1,5 +1,7 @@
 # ScopedAttributes
 
+Support to attributes visible for each roles.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,19 +20,15 @@ Or install it yourself as:
 
 ## Usage
 
-create scoped class
+create scoped class.
 
 ```rb
 class ApplicationScopedModel
   include ScopedAttributes
-  roles :admin, :crew
+  roles :admin # Multiple arguments can be specified (ex. admin, manager, ...)
 
   def admin?
     user.admin?
-  end
-
-  def crew?
-    !admin?
   end
 end
 ```
@@ -48,9 +46,7 @@ class ScopedCrew < ApplicationScopedModel
 end
 ```
 
-### for ActiveRecord
-
-usage
+### When using with ActiveRecord object
 
 current_user is crew and crew is not me
 
@@ -111,7 +107,7 @@ Crew.find(1).scoped
 => #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
 ```
 
-## for pure object
+## When using with PORO 
 
 ```rb
 class ScopedCrew < ApplicationScopedModel
