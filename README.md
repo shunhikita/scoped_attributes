@@ -1,9 +1,5 @@
 # ScopedAttributes
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/scoped_attributes`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -22,7 +18,124 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+create scoped class
+
+```rb
+class ApplicationScopedModel
+  include ScopedAttributes
+  roles :admin, :crew
+
+  def admin?
+    user.admin?
+  end
+
+  def crew?
+    !admin?
+  end
+end
+```
+
+```rb
+class ScopedCrew < ApplicationScopedModel
+  attribute :id
+  attribute :name
+  attribute :address, only: proc { me? || admin? } # Proc
+  attribute :evaluation, only: %i(admin) # role names (Array)
+
+  def me?
+    id == user.crew_id
+  end
+end
+```
+
+### for ActiveRecord
+
+usage
+
+current_user is crew and crew is not me
+
+```rb
+scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
+scoped_crew.name
+# => "hoge"
+
+scoped_crew.address
+# => nil
+
+scoped_crew.attributes
+# => {:id=>1, :name=>"hoge"}
+
+scoped_crew.to_model
+=> #<Crew:xxx id: 1, name: "hoge">
+
+Crew.find(1).scoped
+=> #<Crew:xxx id: 1, name: "hoge">
+```
+
+current_user is crew and crew is me
+```rb
+scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
+scoped_crew.name
+# => "hoge"
+
+scoped_crew.address
+# => "tokyo"
+
+scoped_crew.attributes
+# => {:id=>1, :name=>"hoge", :address=>"tokyo"}
+
+scoped_crew.to_model
+=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
+
+Crew.find(1).scoped
+=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
+```
+
+current_user is admin
+
+```rb
+scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
+scoped_crew.name
+# => "hoge"
+
+scoped_crew.address
+# =>  "tokyo"
+
+scoped_crew.attributes
+# => {:id=>1, :name=>"hoge", :address=>"tokyo", :evaluation=>"SS"}
+
+scoped_crew.to_model
+=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
+
+Crew.find(1).scoped
+=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
+```
+
+## for pure object
+
+```rb
+class ScopedCrew < ApplicationScopedModel
+  attribute :name
+  attribute :addres
+  attribute :evaluation, only: %i(admin)
+end
+
+class CustomCrew
+  attr_accessor :name, :address, :evaluation
+  
+  def initialize(name, address, evaluation)
+    self.name = name
+    self.address = address
+    self.evaluation = evaluation
+  end
+end
+
+crew = CustomCrew.new("hoge", "tokyo", "SS")
+scoped_crew = ScopedCrew.new(crew, current_user)
+scoped_crew.attributes
+# => {:name=>"hoge", :address=>"tokyo"}
+```
+
 
 ## Development
 
@@ -32,4 +145,4 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/scoped_attributes.
+Bug reports and pull requests are welcome on GitHub at https://github.com/shunhikita/scoped_attributes.
