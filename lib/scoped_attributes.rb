@@ -56,7 +56,7 @@ module ScopedAttributes
   def to_model
     return nil if model.nil?
 
-    if object&.id.nil?
+    if object.try(:id).nil?
       model.new(attributes)
     else
       model.select(attributes.keys).find_by(id: object.id)
