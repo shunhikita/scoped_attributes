@@ -2,6 +2,8 @@
 
 Support to attributes visible for each roles.
 
+![](https://github.com/shunhikita/scoped_attributes/workflows/CI/badge.svg?branch=master)
+
 ## Installation
 
 Add this line to your application's Gemfile:
