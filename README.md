@@ -1,8 +1,9 @@
 # ScopedAttributes
-
-Support to attributes visible for each roles.
-
 ![](https://github.com/shunhikita/scoped_attributes/workflows/CI/badge.svg?branch=master)
+
+scoped_attributes provides a module that allows you to add access restriction settings to attributes.
+By using this, you can easily create a wrapper model that returns only the information required for each different role.
+I think it can also be used to API Scope and view models.
 
 ## Installation
 
@@ -12,25 +13,21 @@ Add this line to your application's Gemfile:
 gem 'scoped_attributes'
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install scoped_attributes
-
 ## Usage
 
-create scoped class.
+You can create a wrapper model by including the ScopedAttributes module.
 
 ```rb
 class ApplicationScopedModel
   include ScopedAttributes
-  roles :admin # Multiple arguments can be specified (ex. admin, manager, ...)
+  roles :admin, :manager 
 
   def admin?
     user.admin?
+  end
+
+  def manager?
+    user.manager?
   end
 end
 ```
@@ -50,9 +47,13 @@ end
 
 ### When using with ActiveRecord object
 
-current_user is crew and crew is not me
+Specify the target object in the first argument and the user with the role in the second argument.
+The acquisition of the attribute  is controlled by the condition specified in attribute class macro.
+
+For an ActiveRecord object, you can use the to_model method to get the model instance with the attribute selected.
 
 ```rb
+# current_user is not admin and not me
 scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
 scoped_crew.name
 # => "hoge"
@@ -64,14 +65,15 @@ scoped_crew.attributes
 # => {:id=>1, :name=>"hoge"}
 
 scoped_crew.to_model
-=> #<Crew:xxx id: 1, name: "hoge">
+# => #<Crew:xxx id: 1, name: "hoge">
 
-Crew.find(1).scoped
-=> #<Crew:xxx id: 1, name: "hoge">
+Crew.find(1).scoped(current_user)
+# => #<Crew:xxx id: 1, name: "hoge">
 ```
 
-current_user is crew and crew is me
+
 ```rb
+# current_user is not admin but is me
 scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
 scoped_crew.name
 # => "hoge"
@@ -83,33 +85,34 @@ scoped_crew.attributes
 # => {:id=>1, :name=>"hoge", :address=>"tokyo"}
 
 scoped_crew.to_model
-=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
+# => #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
 
-Crew.find(1).scoped
-=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
+Crew.find(1).scoped(current_user)
+# => #<Crew:xxx id: 1, name: "hoge", address: "tokyo">
 ```
 
-current_user is admin
-
 ```rb
+# current_user is admin
 scoped_crew = ScopedCrew.new(Crew.find(1), current_user)
 scoped_crew.name
 # => "hoge"
 
 scoped_crew.address
-# =>  "tokyo"
+# => "tokyo"
 
 scoped_crew.attributes
 # => {:id=>1, :name=>"hoge", :address=>"tokyo", :evaluation=>"SS"}
 
 scoped_crew.to_model
-=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
+# => #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
 
-Crew.find(1).scoped
-=> #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
+Crew.find(1).scoped(current_user)
+# => #<Crew:xxx id: 1, name: "hoge", address: "tokyo", evaluation: "SS">
 ```
 
 ## When using with PORO 
+
+ScopedAttributes module can also be used by including it in PORO(Plain Old Ruby Object).
 
 ```rb
 class ScopedCrew < ApplicationScopedModel
