@@ -23,11 +23,9 @@ module ScopedAttributes
   class_methods do
     def roles(*role_names)
       role_names.each do |role_name|
-        class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{role_name}?
-              raise NotImplementedError.new("You must implement #{self.class}##{__method__}") 
-            end
-        RUBY
+        define_method "#{role_name}?".to_sym do
+          user.public_send("#{role_name}?")
+        end
       end
     end
 
