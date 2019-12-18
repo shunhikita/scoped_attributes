@@ -39,7 +39,7 @@ module ScopedAttributes
     end
 
     def define_attribute_reader(name, options)
-      only = options.fetch(:only, nil)
+      only = options[:only]
 
       define_method name do
         object.public_send(name) if visible?(only)
@@ -64,7 +64,7 @@ module ScopedAttributes
   def attributes(include_key: false)
     attributes = {}
     self.class.attributes_registry.each do |name, options|
-      only = options.fetch(:only, nil)
+      only = options[:only]
 
       if visible?(only)
         attributes[name] = object.public_send(name)
@@ -89,20 +89,9 @@ module ScopedAttributes
     when Symbol
       public_send(only)
     when Proc
-      unbound_method = generate_method(:only_call, &only)
-      !!unbound_method.bind(self).call
+      instance_exec(&only)
     else
       false
     end
-  end
-
-  def generate_method(method_name, &block)
-    method = nil
-    Module.new do
-      define_method method_name, &block
-      method = instance_method method_name
-      remove_method method_name
-    end
-    method
   end
 end
